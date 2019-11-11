@@ -1,1 +1,1 @@
-sudo rm stream* -vfr; sudo ffmpeg -i /dev/video0 -input_format h264 -f hls -g 2 -hls_playlist_type event -r 2 stream.m3u8
+sudo raspivid -o - -t 0 -fps 30 -g 50 -n -a 12 -b 25000000 | sudo ffmpeg -re -f h264 -i - -c:v copy -f flv rtmp://localhost/show/stream
