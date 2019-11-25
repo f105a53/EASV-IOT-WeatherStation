@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -11,6 +8,13 @@ namespace Collector
 {
     public class Program
     {
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .UseSerilog()
+                .ConfigureServices((hostContext, services) => { services.AddHostedService<Worker>(); });
+        }
+
         public static int Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
@@ -35,16 +39,6 @@ namespace Collector
             {
                 Log.CloseAndFlush();
             }
-
-            
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .UseSerilog()
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddHostedService<Worker>();
-                });
     }
 }

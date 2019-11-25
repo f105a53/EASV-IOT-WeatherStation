@@ -2,13 +2,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Diagnostics;
 using MQTTnet.Extensions.ManagedClient;
-using Serilog.Events;
-using ILogger = Serilog.ILogger;
+using Serilog;
 
 namespace Collector
 {
@@ -25,11 +23,11 @@ namespace Collector
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-
                 MqttNetGlobalLogger.LogMessagePublished += (s, e) =>
                 {
-                    var trace = $">> [{e.TraceMessage.Timestamp:O}] [{e.TraceMessage.ThreadId}] [{e.TraceMessage.Source}] [{e.TraceMessage.Level}]: {e.TraceMessage.Message}";
-                    _logger.Verbose(e.TraceMessage.Exception,"{}",trace);
+                    var trace =
+                        $">> [{e.TraceMessage.Timestamp:O}] [{e.TraceMessage.ThreadId}] [{e.TraceMessage.Source}] [{e.TraceMessage.Level}]: {e.TraceMessage.Message}";
+                    _logger.Verbose(e.TraceMessage.Exception, "{}", trace);
                 };
 
                 // Setup and start a managed MQTT client.
@@ -42,7 +40,7 @@ namespace Collector
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();
                 mqttClient.UseApplicationMessageReceivedHandler(msg =>
-                    _logger.Information("{}",msg));
+                    _logger.Information("{}", msg));
                 await mqttClient.SubscribeAsync(
                     new[]
                     {
