@@ -7,14 +7,16 @@ using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Diagnostics;
 using MQTTnet.Extensions.ManagedClient;
+using Serilog.Events;
+using ILogger = Serilog.ILogger;
 
 namespace Collector
 {
     public class Worker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger _logger;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger logger)
         {
             _logger = logger;
         }
@@ -27,12 +29,7 @@ namespace Collector
                 MqttNetGlobalLogger.LogMessagePublished += (s, e) =>
                 {
                     var trace = $">> [{e.TraceMessage.Timestamp:O}] [{e.TraceMessage.ThreadId}] [{e.TraceMessage.Source}] [{e.TraceMessage.Level}]: {e.TraceMessage.Message}";
-                    if (e.TraceMessage.Exception != null)
-                    {
-                        trace += Environment.NewLine + e.TraceMessage.Exception.ToString();
-                    }
-
-                    Console.WriteLine(trace);
+                    _logger.Verbose(e.TraceMessage.Exception,"{}",trace);
                 };
 
                 // Setup and start a managed MQTT client.
@@ -45,7 +42,7 @@ namespace Collector
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();
                 mqttClient.UseApplicationMessageReceivedHandler(msg =>
-                    Console.WriteLine(msg.ApplicationMessage.ConvertPayloadToString()));
+                    _logger.Information("{}",msg));
                 await mqttClient.SubscribeAsync(
                     new[]
                     {
@@ -53,7 +50,6 @@ namespace Collector
                     }
                 );
                 await mqttClient.StartAsync(options);
-                Console.WriteLine(mqttClient.IsConnected);
                 await WhenCanceled(stoppingToken);
             }
         }
