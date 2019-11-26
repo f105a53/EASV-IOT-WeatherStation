@@ -11,7 +11,7 @@ namespace Collector
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-                .UseSerilog()
+                .UseSerilog(Log.Logger,false)
                 .ConfigureServices((hostContext, services) => { services.AddHostedService<Worker>(); });
         }
 

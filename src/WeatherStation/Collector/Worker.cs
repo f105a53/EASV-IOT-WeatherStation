@@ -27,7 +27,7 @@ namespace Collector
                 {
                     var trace =
                         $">> [{e.TraceMessage.Timestamp:O}] [{e.TraceMessage.ThreadId}] [{e.TraceMessage.Source}] [{e.TraceMessage.Level}]: {e.TraceMessage.Message}";
-                    _logger.Verbose(e.TraceMessage.Exception, "{}", trace);
+                    _logger.Verbose(e.TraceMessage.Exception, "{@traceMsg}", trace);
                 };
 
                 // Setup and start a managed MQTT client.
@@ -40,7 +40,7 @@ namespace Collector
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();
                 mqttClient.UseApplicationMessageReceivedHandler(msg =>
-                    _logger.Information("{}", msg));
+                    _logger.Information("Received: {topic} {msg}",msg.ApplicationMessage.Topic, msg.ApplicationMessage.ConvertPayloadToString()));
                 await mqttClient.SubscribeAsync(
                     new[]
                     {
