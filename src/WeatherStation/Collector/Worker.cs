@@ -40,11 +40,13 @@ namespace Collector
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();
                 mqttClient.UseApplicationMessageReceivedHandler(msg =>
-                    _logger.Information("Received: {topic} {msg}",msg.ApplicationMessage.Topic, msg.ApplicationMessage.ConvertPayloadToString()));
+                    _logger.Information("Received: {topic} {msg}", msg.ApplicationMessage.Topic,
+                        msg.ApplicationMessage.ConvertPayloadToString()));
                 await mqttClient.SubscribeAsync(
                     new[]
                     {
-                        new TopicFilterBuilder().WithTopic("rtl_433/+/devices/+/+/+/humidity").Build()
+                        new TopicFilterBuilder().WithTopic("rtl_433/+/devices/+/+/+/humidity").Build(),
+                        new TopicFilterBuilder().WithTopic("rtl_433/+/devices/+/+/+/temperature_C").Build()
                     }
                 );
                 await mqttClient.StartAsync(options);
