@@ -1,6 +1,9 @@
 using System;
+using System.ComponentModel.Design.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using InfluxDB.Client.Api.Domain;
+using InfluxDB.Client.Core;
 using Microsoft.Extensions.Hosting;
 using MQTTnet;
 using MQTTnet.Client.Options;
@@ -23,6 +26,9 @@ namespace Collector
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                var influxDbClient = InfluxDB.Client.InfluxDBClientFactory.Create("192.168.2.108","root","root".ToCharArray());
+
+
                 MqttNetGlobalLogger.LogMessagePublished += (s, e) =>
                 {
                     var trace =
@@ -40,8 +46,12 @@ namespace Collector
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();
                 mqttClient.UseApplicationMessageReceivedHandler(msg =>
+                {
                     _logger.Information("Received: {topic} {msg}", msg.ApplicationMessage.Topic,
-                        msg.ApplicationMessage.ConvertPayloadToString()));
+                        msg.ApplicationMessage.ConvertPayloadToString());
+                    influxDbClient.GetWriteApi().WriteMeasurement(WritePrecision.S,new Temperature(){Device = msg.ApplicationMessage.Topic,Value = Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()), Time = DateTime.Now});
+                    
+                });
                 await mqttClient.SubscribeAsync(
                     new[]
                     {
@@ -60,5 +70,14 @@ namespace Collector
             cancellationToken.Register(s => ((TaskCompletionSource<bool>) s).SetResult(true), tcs);
             return tcs.Task;
         }
+    }
+    [Measurement("temperature")]
+    public class Temperature
+    {
+        [Column("device", IsTag = true)] public string Device { get; set; }
+
+        [Column("value")] public double Value { get; set; }
+
+        [Column(IsTimestamp = true)] public DateTime Time;
     }
 }
