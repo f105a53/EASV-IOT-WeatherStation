@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Core;
+using WeatherStation.Shared;
 
 namespace WeatherStation.Server.Service
 {
@@ -26,14 +27,13 @@ namespace WeatherStation.Server.Service
             return data.GroupBy(d => d.Device).ToList();
         }
 
-        [Measurement("humidity")]
-        public class Humidity
+        public async Task<List<IGrouping<string, Temperature>>> GetTemperatures()
         {
-            [Column("device", IsTag = true)] public string Device { get; set; }
-
-            [Column("value")] public double Value { get; set; }
-
-            [Column("time", IsTimestamp = true)] public DateTime Time { get; set; }
+            var api = _client.GetQueryApi();
+            var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"temperature_C\")","f35d566fb41e6546");
+            return data.GroupBy(d => d.Device).ToList();
         }
+
+
     }
 }
