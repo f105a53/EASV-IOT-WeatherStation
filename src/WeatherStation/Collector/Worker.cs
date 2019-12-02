@@ -10,6 +10,10 @@ using MQTTnet.Client.Options;
 using MQTTnet.Diagnostics;
 using MQTTnet.Extensions.ManagedClient;
 using Serilog;
+using InfluxDB.Client;
+using InfluxDB.Client.Api.Domain;
+using InfluxDB.Client.Core;
+using InfluxDB.Client.Writes;
 
 namespace Collector
 {
@@ -26,7 +30,7 @@ namespace Collector
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var influxDbClient = InfluxDB.Client.InfluxDBClientFactory.Create("192.168.2.108","root","root".ToCharArray());
+                var influxDbClient = InfluxDB.Client.InfluxDBClientFactory.Create("https://eu-central-1-1.aws.cloud2.influxdata.com", "HEjjtm6ewV0f8AjQ4S7ymvpPxGeqpjbFcyCCeQF-sYO7lvH60veVT3eqf_BabQEvsK_n3l5-AGsEGVcbxTGJfw==".ToCharArray());
 
 
                 MqttNetGlobalLogger.LogMessagePublished += (s, e) =>
@@ -49,8 +53,16 @@ namespace Collector
                 {
                     _logger.Information("Received: {topic} {msg}", msg.ApplicationMessage.Topic,
                         msg.ApplicationMessage.ConvertPayloadToString());
-                    influxDbClient.GetWriteApi().WriteMeasurement(WritePrecision.S,new Temperature(){Device = msg.ApplicationMessage.Topic,Value = Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()), Time = DateTime.Now});
-                    
+                    using (var w = influxDbClient.GetWriteApi())
+                    {
+                        var s = msg.ApplicationMessage.Topic;
+                        var i = s.LastIndexOf('/');
+                        var point = Point.Measurement(s.Substring(i + 1))
+                            .Tag("device", s.Substring(0, i))
+                            .Field("value", Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()))
+                            .Timestamp(DateTime.UtcNow, WritePrecision.S);
+                        w.WritePoint("humidity", "f35d566fb41e6546", point);
+                    }
                 });
                 await mqttClient.SubscribeAsync(
                     new[]
@@ -67,17 +79,8 @@ namespace Collector
         public static Task WhenCanceled(CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<bool>();
-            cancellationToken.Register(s => ((TaskCompletionSource<bool>) s).SetResult(true), tcs);
+            cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).SetResult(true), tcs);
             return tcs.Task;
         }
-    }
-    [Measurement("temperature")]
-    public class Temperature
-    {
-        [Column("device", IsTag = true)] public string Device { get; set; }
-
-        [Column("value")] public double Value { get; set; }
-
-        [Column(IsTimestamp = true)] public DateTime Time;
     }
 }
