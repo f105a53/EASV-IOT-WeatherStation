@@ -4,16 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Core;
+using InfluxDB.Client.Writes;
 using Microsoft.Extensions.Hosting;
 using MQTTnet;
 using MQTTnet.Client.Options;
 using MQTTnet.Diagnostics;
 using MQTTnet.Extensions.ManagedClient;
 using Serilog;
-using InfluxDB.Client;
-using InfluxDB.Client.Api.Domain;
-using InfluxDB.Client.Core;
-using InfluxDB.Client.Writes;
 
 namespace Collector
 {
@@ -57,7 +54,7 @@ namespace Collector
                     {
                         var s = msg.ApplicationMessage.Topic;
                         var i = s.LastIndexOf('/');
-                        var point = Point.Measurement(s.Substring(i + 1))
+                        var point = PointData.Measurement(s.Substring(i + 1))
                             .Tag("device", s.Substring(0, i))
                             .Field("value", Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()))
                             .Timestamp(DateTime.UtcNow, WritePrecision.S);
