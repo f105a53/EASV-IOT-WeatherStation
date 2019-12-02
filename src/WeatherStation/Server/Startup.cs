@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
+using WeatherStation.Server.Service;
 
 namespace WeatherStation.Server
 {
@@ -19,6 +20,7 @@ namespace WeatherStation.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+            services.AddSingleton(new QueryService());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

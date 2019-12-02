@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using WeatherStation.Server.Service;
 
 namespace WeatherStation.Server.Controllers
 {
@@ -18,15 +19,18 @@ namespace WeatherStation.Server.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> logger;
+        private readonly QueryService _query;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, QueryService query)
         {
             this.logger = logger;
+            _query = query;
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public async Task<IEnumerable<WeatherForecast>> Get()
         {
+            var data = await _query.GetHumidities();
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
