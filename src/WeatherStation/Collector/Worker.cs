@@ -1,9 +1,8 @@
 using System;
-using System.ComponentModel.Design.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
-using InfluxDB.Client.Core;
 using InfluxDB.Client.Writes;
 using Microsoft.Extensions.Hosting;
 using MQTTnet;
@@ -27,7 +26,9 @@ namespace Collector
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var influxDbClient = InfluxDB.Client.InfluxDBClientFactory.Create("https://eu-central-1-1.aws.cloud2.influxdata.com", "HEjjtm6ewV0f8AjQ4S7ymvpPxGeqpjbFcyCCeQF-sYO7lvH60veVT3eqf_BabQEvsK_n3l5-AGsEGVcbxTGJfw==".ToCharArray());
+                var influxDbClient = InfluxDBClientFactory.Create("https://eu-central-1-1.aws.cloud2.influxdata.com",
+                    "HEjjtm6ewV0f8AjQ4S7ymvpPxGeqpjbFcyCCeQF-sYO7lvH60veVT3eqf_BabQEvsK_n3l5-AGsEGVcbxTGJfw=="
+                        .ToCharArray());
 
 
                 MqttNetGlobalLogger.LogMessagePublished += (s, e) =>
@@ -50,16 +51,14 @@ namespace Collector
                 {
                     _logger.Information("Received: {topic} {msg}", msg.ApplicationMessage.Topic,
                         msg.ApplicationMessage.ConvertPayloadToString());
-                    using (var w = influxDbClient.GetWriteApi())
-                    {
-                        var s = msg.ApplicationMessage.Topic;
-                        var i = s.LastIndexOf('/');
-                        var point = PointData.Measurement(s.Substring(i + 1))
-                            .Tag("device", s.Substring(0, i))
-                            .Field("value", Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()))
-                            .Timestamp(DateTime.UtcNow, WritePrecision.S);
-                        w.WritePoint("humidity", "f35d566fb41e6546", point);
-                    }
+                    using var w = influxDbClient.GetWriteApi();
+                    var s = msg.ApplicationMessage.Topic;
+                    var i = s.LastIndexOf('/');
+                    var point = PointData.Measurement(s.Substring(i + 1))
+                        .Tag("device", s.Substring(0, i))
+                        .Field("value", Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()))
+                        .Timestamp(DateTime.UtcNow, WritePrecision.S);
+                    w.WritePoint("humidity", "f35d566fb41e6546", point);
                 });
                 await mqttClient.SubscribeAsync(
                     new[]
@@ -76,7 +75,7 @@ namespace Collector
         public static Task WhenCanceled(CancellationToken cancellationToken)
         {
             var tcs = new TaskCompletionSource<bool>();
-            cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).SetResult(true), tcs);
+            cancellationToken.Register(s => ((TaskCompletionSource<bool>) s).SetResult(true), tcs);
             return tcs.Task;
         }
     }
