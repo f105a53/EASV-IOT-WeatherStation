@@ -22,7 +22,7 @@ namespace WeatherStation.Server.Controllers
         }
 
         [HttpGet]
-        public async Task<List<IGrouping<string, Temperature>>> GetTemperatures()
+        public async Task<IDictionary<string, List<Temperature>>> GetTemperatures()
         {
             return await _query.GetTemperatures();
         }

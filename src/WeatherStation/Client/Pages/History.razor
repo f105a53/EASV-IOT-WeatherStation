@@ -22,12 +22,10 @@ else
             <tr>
                 <th>Date</th>
                 <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
             </tr>
             </thead>
             <tbody>
-            @foreach (var temp in deviceTemps)
+            @foreach (var temp in deviceTemps.Value)
             {
                 <tr>
                     <td>@temp.Time</td>
@@ -40,11 +38,11 @@ else
 }
 
 @code {
-    private List<IGrouping<string, Temperature>> temps;
+    private IDictionary<string, List<Temperature>> temps;
 
     protected override async Task OnInitializedAsync()
     {
-        temps = await Http.GetJsonAsync<List<IGrouping<string, Temperature>>>("Query");
+        temps = await Http.GetJsonAsync<IDictionary<string, List<Temperature>>>("Query");
     }
 
 }

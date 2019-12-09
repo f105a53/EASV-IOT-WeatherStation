@@ -20,18 +20,18 @@ namespace WeatherStation.Server.Service
                     .ToCharArray());
         }
 
-        public async Task<List<IGrouping<string, Humidity>>> GetHumidities()
+        public async Task<IDictionary<string, List<Humidity>>> GetHumidities()
         {
             var api = _client.GetQueryApi();
             var data = await api.QueryAsync<Humidity>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"humidity\")","f35d566fb41e6546");
-            return data.GroupBy(d => d.Device).ToList();
+            return data.GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
-        public async Task<List<IGrouping<string, Temperature>>> GetTemperatures()
+        public async Task<IDictionary<string, List<Temperature>>> GetTemperatures()
         {
             var api = _client.GetQueryApi();
             var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"temperature_C\")","f35d566fb41e6546");
-            return data.GroupBy(d => d.Device).ToList();
+            return data.GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
 

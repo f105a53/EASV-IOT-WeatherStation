@@ -43,7 +43,7 @@ namespace Collector
                     .WithAutoReconnectDelay(TimeSpan.FromMilliseconds(500))
                     .WithClientOptions(new MqttClientOptionsBuilder()
                         .WithClientId("Client1")
-                        .WithTcpServer("192.168.2.108").Build())
+                        .WithTcpServer("10.176.241.23").Build())
                     .Build();
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();

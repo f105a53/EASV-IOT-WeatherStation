@@ -763,3 +763,4 @@ $RECYCLE.BIN/
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 
 # End of https://www.gitignore.io/api/linux,fsharp,python,csharp,pycharm,windows,visualstudio,visualstudiocode
+.ionide/symbolCache.db
