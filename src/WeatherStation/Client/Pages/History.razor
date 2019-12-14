@@ -11,8 +11,9 @@
     <p>
         <em>Loading...</em>
     </p>
-}
-else
+} else if (temps.Count == 0){
+    <h2>No devices with readings available</h2>
+} else
 {
     @foreach (var deviceTemps in temps)
     {
