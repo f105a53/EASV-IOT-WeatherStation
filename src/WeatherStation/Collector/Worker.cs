@@ -27,7 +27,7 @@ namespace Collector
             while (!stoppingToken.IsCancellationRequested)
             {
                 var influxDbClient = InfluxDBClientFactory.Create("https://eu-central-1-1.aws.cloud2.influxdata.com",
-                    "HEjjtm6ewV0f8AjQ4S7ymvpPxGeqpjbFcyCCeQF-sYO7lvH60veVT3eqf_BabQEvsK_n3l5-AGsEGVcbxTGJfw=="
+                    "epLboaxSf0aYI6FBjeAoFb-RXykUUvwoeTt62Fc6rT414BD94zO6-2KPu6NbM5MuMdwpfp5zEK3dvnHjIKAynQ=="
                         .ToCharArray());
 
 
@@ -42,8 +42,9 @@ namespace Collector
                 var options = new ManagedMqttClientOptionsBuilder()
                     .WithAutoReconnectDelay(TimeSpan.FromMilliseconds(500))
                     .WithClientOptions(new MqttClientOptionsBuilder()
-                        .WithClientId("Client1")
-                        .WithTcpServer("10.176.241.23").Build())
+                        .WithClientId("Collector")
+                        .WithTcpServer("127.0.0.1")
+                        .Build())
                     .Build();
 
                 var mqttClient = new MqttFactory().CreateManagedMqttClient();
@@ -58,7 +59,7 @@ namespace Collector
                         .Tag("device", s.Substring(0, i))
                         .Field("value", Convert.ToDouble(msg.ApplicationMessage.ConvertPayloadToString()))
                         .Timestamp(DateTime.UtcNow, WritePrecision.S);
-                    w.WritePoint("humidity", "f35d566fb41e6546", point);
+                    w.WritePoint("humidity", "93a7785d1f9d8493", point);
                 });
                 await mqttClient.SubscribeAsync(
                     new[]
