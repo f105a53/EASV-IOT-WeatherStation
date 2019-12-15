@@ -38,7 +38,7 @@ namespace WeatherStation.Server.Service
         {
             var api = _client.GetQueryApi();
             var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) ","93a7785d1f9d8493");
-            return data.Select(d=>d.Device).Distinct().ToList();
+            return data.Select(d => d.Device).Distinct().OrderBy(x => x).ToList();
         }
     }
 }
