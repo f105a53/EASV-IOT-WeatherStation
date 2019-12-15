@@ -1,0 +1,17 @@
+﻿@using WeatherStation.Shared;
+@inject HttpClient Http
+
+<h3>@Name</h3>
+<input type="text" placeholder="Rename to ..." @bind-value="Rename" />
+<button @onclick="Apply">Apply</button>
+
+@code {
+    [Parameter]
+    public string Name { get; set; }
+    public string Rename { get; set; }
+
+    public async Task Apply()
+    {
+        await Http.PostJsonAsync("api/Devices", new Rename() { Name = Name, RenameTo = Rename });
+    }
+}

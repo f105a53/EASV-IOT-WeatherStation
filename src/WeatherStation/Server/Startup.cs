@@ -21,6 +21,7 @@ namespace WeatherStation.Server
                     new[] { "application/octet-stream" });
             });
             services.AddSingleton(new QueryService());
+            services.AddSingleton(new DeviceRenamerService());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

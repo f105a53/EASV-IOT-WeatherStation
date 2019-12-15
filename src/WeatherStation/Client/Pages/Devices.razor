@@ -17,8 +17,7 @@ else
 {
     @foreach (var device in devices)
     {
-        <h2>@device</h2>
-
+        <DeviceRename Name="@device"></DeviceRename>
     }
 }
 
@@ -27,7 +26,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        devices = await Http.GetJsonAsync<IList<string>>("Devices");
+        devices = await Http.GetJsonAsync<IList<string>>("api/Devices");
     }
 
 }

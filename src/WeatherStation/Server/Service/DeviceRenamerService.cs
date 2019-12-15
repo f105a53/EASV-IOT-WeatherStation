@@ -7,7 +7,7 @@ namespace WeatherStation.Server.Service
 {
     public class DeviceRenamerService
     {
-        private readonly IDictionary<string, string> renames;
+        private readonly IDictionary<string, string> renames = new Dictionary<string,string>();
 
         public string GetRenameOrSame(string name)
         {
@@ -23,7 +23,7 @@ namespace WeatherStation.Server.Service
 
         public void Rename(string name, string rename)
         {
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(rename))
             {
                 renames.Remove(name);
             }

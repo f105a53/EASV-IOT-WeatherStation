@@ -5,21 +5,23 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WeatherStation.Server.Service;
+using WeatherStation.Shared;
 
 namespace WeatherStation.Server.Controllers
 {
-    [Route("[controller]")]
+    [Route("/api/[controller]")]
     [ApiController]
     public class DevicesController : ControllerBase
     {
         private readonly QueryService queryService;
+        private readonly DeviceRenamerService deviceRenamerService;
 
-        public DevicesController(QueryService queryService)
+        public DevicesController(QueryService queryService, DeviceRenamerService deviceRenamerService)
         {
             this.queryService = queryService;
+            this.deviceRenamerService = deviceRenamerService;
         }
 
-        // GET: api/Devices
         [HttpGet]
         public async Task<IEnumerable<string>> Get()
         {
@@ -35,8 +37,9 @@ namespace WeatherStation.Server.Controllers
 
         // POST: api/Devices
         [HttpPost]
-        public void Post([FromBody] string value)
+        public void Post([FromBody] Rename nr)
         {
+            deviceRenamerService.Rename(nr.Name,nr.RenameTo);
         }
 
         // PUT: api/Devices/5
