@@ -34,6 +34,11 @@ namespace WeatherStation.Server.Service
             return data.GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
-
+        public async Task<IList<string>> GetDevices()
+        {
+            var api = _client.GetQueryApi();
+            var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) ","93a7785d1f9d8493");
+            return data.Select(d=>d.Device).Distinct().ToList();
+        }
     }
 }

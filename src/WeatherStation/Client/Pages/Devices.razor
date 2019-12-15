@@ -1,3 +1,33 @@
 ﻿@page "/devices"
+@inject HttpClient Http
 
 <h1>Devices:</h1>
+
+@if (devices == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else if (devices.Count == 0)
+{
+    <h2>No devices with readings available</h2>
+}
+else
+{
+    @foreach (var device in devices)
+    {
+        <h2>@device</h2>
+
+    }
+}
+
+@code {
+    private IList<string> devices;
+
+    protected override async Task OnInitializedAsync()
+    {
+        devices = await Http.GetJsonAsync<IList<string>>("Devices");
+    }
+
+}
