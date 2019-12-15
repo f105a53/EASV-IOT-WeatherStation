@@ -20,7 +20,7 @@ namespace WeatherStation.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
-            services.AddSingleton(new QueryService());
+            services.AddSingleton<QueryService>();
             services.AddSingleton(new DeviceRenamerService());
         }
 

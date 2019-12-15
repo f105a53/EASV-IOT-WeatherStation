@@ -12,26 +12,28 @@ namespace WeatherStation.Server.Service
     public class QueryService
     {
         private readonly InfluxDBClient _client;
+        private readonly DeviceRenamerService deviceRenamerService;
 
-        public QueryService()
+        public QueryService(DeviceRenamerService deviceRenamerService)
         {
             _client = InfluxDBClientFactory.Create("https://eu-central-1-1.aws.cloud2.influxdata.com",
                 "epLboaxSf0aYI6FBjeAoFb-RXykUUvwoeTt62Fc6rT414BD94zO6-2KPu6NbM5MuMdwpfp5zEK3dvnHjIKAynQ=="
                     .ToCharArray());
+            this.deviceRenamerService = deviceRenamerService;
         }
 
         public async Task<IDictionary<string, List<Humidity>>> GetHumidities()
         {
             var api = _client.GetQueryApi();
             var data = await api.QueryAsync<Humidity>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"humidity\")","93a7785d1f9d8493");
-            return data.GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
+            return data.Select(d=> {d.Device = deviceRenamerService.GetRenameOrSame(d.Device); return d;}).GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
         public async Task<IDictionary<string, List<Temperature>>> GetTemperatures()
         {
             var api = _client.GetQueryApi();
             var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"temperature_C\")","93a7785d1f9d8493");
-            return data.GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
+            return data.Select(d=> {d.Device = deviceRenamerService.GetRenameOrSame(d.Device); return d;}).GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
         public async Task<IList<string>> GetDevices()
