@@ -7,9 +7,13 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-<!-- Some chart tests-->
-<button class="btn btn-primary" @onclick="loadChart">Click to load a chart</button>
-<div id="myHistoryChart"/>
+<!-- Humidity Chart (line = device) -->
+<button class="btn btn-primary" @onclick="LoadChart">Click to load a chart</button>
+<div id="allHumidityChart"/>
+
+
+<!-- Temperature Chart (line = device) -->
+
 
 <!-- Table values -->
 @if (temps == null)
@@ -51,12 +55,30 @@
     protected override async Task OnInitializedAsync()
     {
         temps = await Http.GetJsonAsync<IDictionary<string, List<Temperature>>>("Query");
-        humidities = await Http.GetJsonAsync<IDictionary<string, List<Humidity>>>("Query");
+        humidities = await Http.GetJsonAsync<IDictionary<string, List<Humidity>>>("Humidity");
     }
 
-    private void loadChart ()
+    private void LoadChart ()
     {
-        JSRunTime.InvokeVoidAsync("drawHistoryChart", "myHistoryChart");
+
+        JSRunTime.InvokeVoidAsync("drawSingleLineChart", new object[] { "allHumidityChart", "All Humidities Chart", ConvertHumidities(humidities) } );
+    }
+
+    private string[] ConvertHumidities (IDictionary<string, List<Humidity>> humidities)
+    {
+        var humidityList = new List<string>();
+        foreach (List<Humidity> deviceHumidities in humidities.Values)
+        {
+            foreach (Humidity humidity in deviceHumidities)
+            {
+                humidityList.Add(humidity.Time.ToString("dd-MM-yyyy HH:mm"));
+                humidityList.Add(humidity.Device);
+                humidityList.Add(humidity.Value.ToString());
+            }
+        }
+
+
+        return humidityList.ToArray();
     }
 
 }
