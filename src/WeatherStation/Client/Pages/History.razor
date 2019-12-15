@@ -1,11 +1,17 @@
 ﻿@page "/history"
 @using WeatherStation.Shared
 @inject HttpClient Http
+@inject IJSRuntime JSRunTime
 
 <h1>History</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
+<!-- Some chart tests-->
+<button class="btn btn-primary" @onclick="loadChart">Click to load a chart</button>
+<div id="myHistoryChart"/>
+
+<!-- Table values -->
 @if (temps == null)
 {
     <p>
@@ -40,10 +46,17 @@
 
 @code {
     private IDictionary<string, List<Temperature>> temps;
+    private IDictionary<string, List<Humidity>> humidities;
 
     protected override async Task OnInitializedAsync()
     {
         temps = await Http.GetJsonAsync<IDictionary<string, List<Temperature>>>("Query");
+        humidities = await Http.GetJsonAsync<IDictionary<string, List<Humidity>>>("Query");
+    }
+
+    private void loadChart ()
+    {
+        JSRunTime.InvokeVoidAsync("drawHistoryChart", "myHistoryChart");
     }
 
 }
