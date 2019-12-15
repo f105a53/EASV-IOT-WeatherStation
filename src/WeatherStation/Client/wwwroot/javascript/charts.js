@@ -2,6 +2,24 @@
 google.charts.setOnLoadCallback(drawSingleLineChart);
 
 
+function mergeTimeArrays(timeArray) {
+    let a = [timeArray[0][0]]; // First array first timestamp
+
+    for (let i = 1; i < timeArray[0].length; i++) {
+        let p_val = undefined;
+        for (let j = 0; j < timeArray.length; j++) {
+            if (timeArray[j][i] != undefined) {
+                p_val = timeArray[j][i];
+                break;
+            }
+        }
+        a.push(p_val);
+        p_val = undefined;
+    }
+
+    return a;
+}
+
 function formatData(headers, data) {
     let arr = [];
     for (let i = 0; i < data.length; i += headers.length) {
@@ -35,6 +53,9 @@ function formatData(headers, data) {
     let dataArray = [dataHeaders];
     for (let timeKey of Object.keys(timeGrouped)) {
         //console.log('timeGrouped[timeKey]: ', timeGrouped[timeKey]);
+
+        let timeArray = [];
+
         for (let recObj of timeGrouped[timeKey]) {
             let headerPos = deviceHeaders.indexOf(recObj.device);
 
@@ -44,16 +65,13 @@ function formatData(headers, data) {
             }
 
             row[headerPos + 1] = Number(recObj.value);
-
-            dataArray.push(row);
-
-            //console.log('headerPos: ', headerPos);
-            //console.log('recObj: ', recObj);
+            timeArray.push(row);
         }
+
+        let timeStamp = mergeTimeArrays(timeArray);
+        dataArray.push(timeStamp);
         
     }
-
-    //console.log('dataArray: ', dataArray);
 
     return dataArray;
 }
@@ -66,12 +84,12 @@ function drawSingleLineChart(element_id, chart_name, chart_data) {
 
     let formatted = formatData(["DateTime", "Device", "Value"], chart_data);
 
-    console.log('Formatted: ', JSON.stringify(formatted));
+    //console.log('Formatted: ', JSON.stringify(formatted));
 
     var data = new google.visualization.arrayToDataTable(formatted);
     
     //var data = new google.visualization.arrayToDataTable([
-    //    ['Time', 'Temperature_C', 'Humidity'],
+    //    ['Time', 'dev1', 'dev2'],
     //    ['20:00', 23, 100],
     //    ['21:00', 22, 98],
     //    ['22:00', 18, 60],
@@ -86,7 +104,7 @@ function drawSingleLineChart(element_id, chart_name, chart_data) {
 
     var options = {
         title: chart_name,
-        curveType: 'none',
+        curveType: 'function',
         legend: { position: 'bottom' },
         animation: {
             startup: true,
