@@ -1,5 +1,4 @@
 ﻿google.charts.load('current', { 'packages': ['gauge'] });
-//google.charts.setOnLoadCallback(drawChart);
 
 function drawChart(element_id, chart_data ) {
 
