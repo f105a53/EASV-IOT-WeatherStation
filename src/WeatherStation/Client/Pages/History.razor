@@ -1,38 +1,53 @@
 ﻿@page "/history"
 @using WeatherStation.Shared
 @inject HttpClient Http
+@inject IJSRuntime JSRunTime
 
 <h1>History</h1>
 
 <p>This component demonstrates fetching data from the server.</p>
 
+<button class="btn btn-primary" @onclick="LoadChart">Click to load a chart</button>
+<br />
+<br />
+
+<!-- Humidity Chart (line = device) -->
+<div id="allHumidityChart" />
+
+<!-- Temperature Chart (line = device) -->
+<div id="allTemperatureChart" />
+
+<!-- Table values -->
 @if (temps == null)
 {
     <p>
         <em>Loading...</em>
     </p>
-} else if (temps.Count == 0){
+}
+else if (temps.Count == 0)
+{
     <h2>No devices with readings available</h2>
-} else
+}
+else
 {
     @foreach (var deviceTemps in temps)
     {
         <h2>@deviceTemps.Key</h2>
         <table class="table">
             <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-            </tr>
+                <tr>
+                    <th>Date</th>
+                    <th>Temp. (C)</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var temp in deviceTemps.Value)
-            {
-                <tr>
-                    <td>@temp.Time</td>
-                    <td>@temp.Value</td>
-                </tr>
-            }
+                @foreach (var temp in deviceTemps.Value)
+                {
+                    <tr>
+                        <td>@temp.Time</td>
+                        <td>@temp.Value</td>
+                    </tr>
+                }
             </tbody>
         </table>
     }
@@ -40,10 +55,50 @@
 
 @code {
     private IDictionary<string, List<Temperature>> temps;
+    private IDictionary<string, List<Humidity>> humidities;
 
     protected override async Task OnInitializedAsync()
     {
         temps = await Http.GetJsonAsync<IDictionary<string, List<Temperature>>>("Query");
+        humidities = await Http.GetJsonAsync<IDictionary<string, List<Humidity>>>("Humidity");
+    }
+
+    private void LoadChart()
+    {
+        JSRunTime.InvokeVoidAsync("drawSingleLineChart", new object[] { "allHumidityChart", "All Humidities Chart", ConvertHumidities(humidities) });
+        JSRunTime.InvokeVoidAsync("drawSingleLineChart", new object[] { "allTemperatureChart", "All Temperature Chart", ConvertTemperatures(temps) });
+    }
+
+    private string[] ConvertTemperatures(IDictionary<string, List<Temperature>> temps)
+    {
+        var temperatureList = new List<string>();
+        foreach (List<Temperature> deviceTemperatures in temps.Values)
+        {
+            foreach (Temperature temp in deviceTemperatures)
+            {
+                temperatureList.Add(temp.Time.ToString("dd-MM-yyyy HH:mm"));
+                temperatureList.Add(temp.Device);
+                temperatureList.Add(temp.Value.ToString());
+            }
+        }
+
+        return temperatureList.ToArray();
+    }
+    
+    private string[] ConvertHumidities(IDictionary<string, List<Humidity>> humidities)
+    {
+        var humidityList = new List<string>();
+        foreach (List<Humidity> deviceHumidities in humidities.Values)
+        {
+            foreach (Humidity humidity in deviceHumidities)
+            {
+                humidityList.Add(humidity.Time.ToString("dd-MM-yyyy HH:mm"));
+                humidityList.Add(humidity.Device);
+                humidityList.Add(humidity.Value.ToString());
+            }
+        }
+
+        return humidityList.ToArray();
     }
 
 }
