@@ -1,0 +1,90 @@
+﻿@page "/dashboard"
+@using WeatherStation.Shared
+@using System.Threading
+@inject HttpClient Http
+@inject IJSRuntime JSRunTime
+
+<h1>Dashboard:</h1>
+
+<button class="btn btn-primary" @onclick="DrawAllGauges">Refresh</button>
+
+<br />
+<br />
+@if (Loading)
+{
+    <p>Loading...</p>
+}
+
+@if (humidities != null && temps != null)
+{
+    <div class="row">
+
+        @foreach (string device in humidities.Keys)
+        {
+            <div class="col-md-10">
+                <h2 class="text-center">@device</h2>
+            </div>
+            <div class="col-md-2"><p></p></div>
+
+            <div class="col-md-5" style="text-align:center;">
+                <p class="text-center">Humidity</p>
+                <div style="display:inline-block;" id="@(humidities[device].OrderBy(h => h.Time).ToList().Last().Device + "humidity")"></div>
+            </div>
+
+            @if (temps[device] != null)
+            {
+                <div class="col-md-5" style="text-align:center;">
+                    <p class="text-center">Temperature</p>
+                    <div style="display:inline-block;" id="@(temps[device].OrderBy(h => h.Time).ToList().Last().Device + "temperature")"></div>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-5">
+                    <p> </p>
+                </div>
+            }
+
+            <div class="col-md-2">
+                <p></p>
+            </div>
+        }
+        <br />
+        <br />
+    </div>
+}
+
+
+@code {
+    private IDictionary<string, List<Temperature>> temps;
+    private IDictionary<string, List<Humidity>> humidities;
+    private bool Loading = false;
+    protected override async Task OnInitializedAsync()
+    {
+        Loading = true;
+        temps = await Http.GetJsonAsync<IDictionary<string, List<Temperature>>>("Query");
+        humidities = await Http.GetJsonAsync<IDictionary<string, List<Humidity>>>("Humidity");
+        Loading = false;
+    }
+
+    private async Task LoadGauge(string devId, string[] data)
+    {
+        await JSRunTime.InvokeVoidAsync("drawChart", new object[] { devId, data });
+    }
+
+    private async Task DrawAllGauges()
+    {
+        foreach (string device in humidities.Keys)
+        {
+
+            var latest_h = humidities[device].OrderBy(h => h.Time).ToList().Last();
+            await LoadGauge((latest_h.Device + "humidity"), new string[] { latest_h.Device, latest_h.Value.ToString() });
+
+            if (temps[device] != null)
+            {
+                var latest_t = temps[device].OrderBy(t => t.Time).ToList().Last();
+                await LoadGauge((latest_t.Device + "temperature"), new string[] { latest_t.Device, latest_t.Value.ToString() });
+            }
+        }
+    }
+}

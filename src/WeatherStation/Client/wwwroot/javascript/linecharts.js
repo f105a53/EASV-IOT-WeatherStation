@@ -1,6 +1,4 @@
 ﻿google.charts.load('current', { packages: ['corechart'] });
-//google.charts.setOnLoadCallback(drawSingleLineChart);
-
 
 function mergeTimeArrays(timeArray) {
     let a = [timeArray[0][0]];
