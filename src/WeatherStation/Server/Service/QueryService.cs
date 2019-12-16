@@ -25,21 +25,21 @@ namespace WeatherStation.Server.Service
         public async Task<IDictionary<string, List<Humidity>>> GetHumidities()
         {
             var api = _client.GetQueryApi();
-            var data = await api.QueryAsync<Humidity>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"humidity\")","93a7785d1f9d8493");
+            var data = await api.QueryAsync<Humidity>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"humidity\")  |> filter(fn: (r) => r.device =~ /rtl_433\\/raspberrypi\\/devices\\/Nexus-TH\\/.*/ )","93a7785d1f9d8493");
             return data.Select(d=> {d.Device = deviceRenamerService.GetRenameOrSame(d.Device); return d;}).GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
         public async Task<IDictionary<string, List<Temperature>>> GetTemperatures()
         {
             var api = _client.GetQueryApi();
-            var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"temperature_C\")","93a7785d1f9d8493");
+            var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r._measurement == \"temperature_C\")  |> filter(fn: (r) => r.device =~ /rtl_433\\/raspberrypi\\/devices\\/Nexus-TH\\/.*/ )","93a7785d1f9d8493");
             return data.Select(d=> {d.Device = deviceRenamerService.GetRenameOrSame(d.Device); return d;}).GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
         public async Task<IList<string>> GetDevices()
         {
             var api = _client.GetQueryApi();
-            var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) ","93a7785d1f9d8493");
+            var data = await api.QueryAsync<Temperature>("from(bucket:\"humidity\") |> range(start:-12h) |> filter(fn: (r) => r.device =~ /rtl_433\\/raspberrypi\\/devices\\/Nexus-TH\\/.*/ )","93a7785d1f9d8493");
             return data.Select(d => d.Device).Distinct().OrderBy(x => x).ToList();
         }
     }
