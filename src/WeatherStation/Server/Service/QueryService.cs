@@ -29,6 +29,13 @@ namespace WeatherStation.Server.Service
             return data.Select(d=> {d.Device = deviceRenamerService.GetRenameOrSame(d.Device); return d;}).GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.ToList());
         }
 
+                public async Task<IDictionary<string, Humidity>> GetAvgHumidities()
+        {
+            var api = _client.GetQueryApi();
+            var data = await api.QueryAsync<Humidity>(@"from(bucket:""humidity"") |> range(start:-1h) |> filter(fn: (r) => r._measurement == ""humidity"")  |> filter(fn: (r) => r.device =~ /rtl_433\/raspberrypi\/devices\/Nexus-TH\/.*/ )   |> aggregateWindow(every: 1h, fn: median)  |> yield(name: ""median"")","93a7785d1f9d8493");
+            return data.Select(d=> {d.Device = deviceRenamerService.GetRenameOrSame(d.Device); return d;}).GroupBy(d => d.Device).ToDictionary(x=>x.Key,x=>x.Last());
+        }
+
         public async Task<IDictionary<string, List<Temperature>>> GetTemperatures()
         {
             var api = _client.GetQueryApi();

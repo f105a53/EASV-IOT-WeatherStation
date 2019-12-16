@@ -8,29 +8,27 @@ using System.Threading.Tasks;
 
 namespace WeatherStation.Server.Service
 {
-    public class TimedHostedService : IHostedService, IDisposable
+    public abstract class TimedHostedService : IHostedService, IDisposable
     {
-        private int executionCount = 0;
         private Timer _timer;
-        private readonly ILogger _logger = Log.ForContext<TimedHostedService>();
+        protected readonly ILogger _logger = Log.ForContext<TimedHostedService>();
+        private readonly TimeSpan interval;
+
+        public TimedHostedService(TimeSpan interval)
+        {
+            this.interval = interval;
+        }
 
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.Information("Timed Hosted Service running.");
 
-            _timer = new Timer(DoWork, null, TimeSpan.Zero,
-                TimeSpan.FromSeconds(5));
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, interval);
 
             return Task.CompletedTask;
         }
 
-        private void DoWork(object state)
-        {
-            executionCount++;
-
-            _logger.Information(
-                "Timed Hosted Service is working. Count: {Count}", executionCount);
-        }
+        protected abstract void DoWork(object state);
 
         public Task StopAsync(CancellationToken stoppingToken)
         {
