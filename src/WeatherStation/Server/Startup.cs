@@ -22,6 +22,7 @@ namespace WeatherStation.Server
             });
             services.AddSingleton<QueryService>();
             services.AddSingleton(new DeviceRenamerService());
+            services.AddHostedService<AlertService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
